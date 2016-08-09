@@ -1,0 +1,20 @@
+{
+  "name": "nr-synthetics-plugin",
+  "version": "1.0.0",
+  "description": "Query New Relic Synthetics and publish new metrics as Plugin",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "kenahrens",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^2.9.0",
+    "forever": "^0.15.2",
+    "newrelic-api-client": "0.0.3",
+    "request": "^2.74.0"
+  },
+  "devDependencies": {
+    "mocha": "^3.0.2"
+  }
+}

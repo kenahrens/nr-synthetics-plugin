@@ -1,0 +1,8 @@
+{
+  "newrelic": {
+    "accountId": "NEWRELIC_ACCOUNT_ID",
+    "restKey": "NEWRELIC_REST_API_KEY",
+    "adminKey": "NEWRELIC_ADMIN_API_KEY",
+    "insightsQueryKey": "NEWRELIC_INSIGHTS_QUERY_KEY"
+  }
+}
