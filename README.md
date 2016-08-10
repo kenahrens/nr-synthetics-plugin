@@ -50,6 +50,23 @@ If you want to query metrics from a single account and post to the same account,
 * NEWRELIC_INSIGHTS_QUERY_KEY maps to insightsQueryKey (for plugin to query metrics)
 
 ### Running the Plugin
+You can run the plugin directly like so:
+```
+kahrens:nr-synthetics-plugin kahrens$ npm start
+
+> nr-synthetics-plugin@1.0.0 start /Users/kahrens/Documents/github/nr-synthetics-plugin
+> node index.js
+
+Wed, 10 Aug 2016 12:48:32 GMT - info: Synthetics Plugin started
+```
+
+Or you can use something like forever to launch the plugin (and re-launch if it crashes):
+```
+kahrens:nr-synthetics-plugin kahrens$ ./node_modules/forever/bin/forever start index.js 
+warn:    --minUptime not set. Defaulting to: 1000ms
+warn:    --spinSleepTime not set. Your script will exit if it does not stay up for at least 1000ms
+info:    Forever processing file: index.js
+```
 
 ### Running the Tests
 The tests work if you're using a single account and will make sure your node environment is setup properly. All you have to do to run them is:
