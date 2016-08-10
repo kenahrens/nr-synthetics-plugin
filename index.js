@@ -1,6 +1,6 @@
 const insights = require('./lib/insights.js');
 const plugins = require('./lib/plugins.js');
-
+const config = require('config');
 const CronJob = require('cron').CronJob;
 const winston = require('winston');
 var logger = new (winston.Logger)({
@@ -11,23 +11,20 @@ var logger = new (winston.Logger)({
   ]
 })
 
-// Configuration used for Insights queries
-var configId = 'newrelic';
+// Insights queries
 var monitorListNQRL = "SELECT uniques(monitorName) FROM SyntheticCheck";
 var locationStatusNRQL = "SELECT latest(result) FROM SyntheticCheck FACET locationLabel WHERE monitorName = '{monitorName}'"
 
 // Publish the metric to the Plugin API
 var reportMetric = function(monitorName, successRate, configId) {
-  logger.info('Report Metric: ' + monitorName + ' (' + successRate + ')');
+  logger.debug('reportMetric: ' + monitorName + ' (' + successRate + ')');
   var successMetricName = plugins.makeMetricName(monitorName, 'Location Success', 'pct');
   var failMetricName = plugins.makeMetricName(monitorName, 'Location Fail', 'pct');
   var metricArr = {};
   metricArr[successMetricName] = successRate;
   metricArr[failMetricName] = 100 - successRate;
   plugins.post(metricArr, configId, function(error, response, body) {
-    if (response.statusCode == 200) {
-      logger.info(body);
-    } else {
+    if (response.statusCode != 200) {
       logger.error('Response to Plugin POST: ' + response.statusCode);
       logger.error(body);
     }
@@ -35,8 +32,8 @@ var reportMetric = function(monitorName, successRate, configId) {
 }
 
 // Get the location status for the given monitor
-var getLocationStatus = function(monitorName) {
-  logger.info('Get status for: ' + monitorName);
+var getLocationStatus = function(monitorName, configId) {
+  logger.debug('getLocationStatus for: ' + monitorName);
   var nrql = locationStatusNRQL.replace('{monitorName}', monitorName);
   insights.query(nrql, configId, function(error, response, body) {
     if (response.statusCode == 200) {
@@ -58,14 +55,15 @@ var getLocationStatus = function(monitorName) {
 }
 
 // Get the list of monitors
-var getMonitorList = function() {
+var getMonitorList = function(configId) {
+  logger.info('getMonitorList for: ' + configId);
   var nrql = monitorListNQRL;
   insights.query(nrql, configId, function(error, response, body) {
     if (response.statusCode == 200) {
       var monitors = body.results[0].members;
       for (var i = 0; i < monitors.length; i++) {
         var monitorName = monitors[i];
-        getLocationStatus(monitorName);
+        getLocationStatus(monitorName, configId);
       }
     } else {
       logger.error('Response to Insights monitor list: ' + response.statusCode);
@@ -77,8 +75,12 @@ var getMonitorList = function() {
 // Run every {duration} seconds
 var cronTime = '*/30 * * * * *';
 var job = new CronJob(cronTime, function() {
-  logger.info('Starting poll');
-  getMonitorList();
+  logger.info('Starting poll cycle with env: ' + process.env.NODE_ENV);
+  var configArr = config.get('configArr');
+  for (var i = 0; i < configArr.length; i++) {
+    var configId = configArr[i];
+    getMonitorList(configId);
+  }
 });
 job.start();
-logger.info('Job started');
+logger.info('Synthetics Plugin started');

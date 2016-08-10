@@ -23,9 +23,11 @@ At this time (version 1.0.0) there are no rollup metrics.
 If you want to query metrics from multiple accounts and post to a specific result account, you must setup a JSON config file of your own. Then before you run the plugin you want to set an environment variable ```NODE_ENV``` with a value of the name of your configuration. Here is an example of how to setup a custom JSON file with multiple sets of keys. At runtime you must set NODE_ENV to the name of this config. (Note that if you want to change the GUID you can put a new value in your custom config and it will over-ride the value in default.json.)
 ```
 {
-  "guid": "com.newrelic.fit.synthetics.monitor.Synthetics2",
-  "duration": 30,
-  "licenseKey": "",
+  "configArr": [
+    "MasterAccount",
+    "SubAccount1",
+    "SubAccount2"
+  ],
   "MasterAccount": {
     "accountId": "",
     "insightsQueryKey": ""
