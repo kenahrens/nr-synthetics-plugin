@@ -1,5 +1,5 @@
 {
-  "guid": "com.newrelic.fit.synthetics.monitor.Synthetics",
+  "guid": "com.newrelic.fit.synthetics.monitor.Synthetics2",
   "duration": 30,
   "licenseKey": "",
   "newrelic": {
