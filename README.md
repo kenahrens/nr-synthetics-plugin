@@ -3,7 +3,7 @@
 
 This plugin runs queries against New Relic Insights to calculate things like % of locations with a failure.
 
-### Installation and Setup
+## Installation and Setup
 Here are the steps to get set up with this plugin:
 * Pre-requisite is NodeJS (4.x or newer) and npm
 * Clone or download this repository
@@ -11,6 +11,13 @@ Here are the steps to get set up with this plugin:
 * Setup your configuration either for single account or multi account
 
 Once you are all set up you can run the plugin with ```npm start```
+
+## Metrics Included
+This plugin currently calculates and publishes the following metrics:
+* Component/{monitorName}/Location Success[pct]
+* Component/{monitorName}/Location Fail[pct]
+
+At this time (version 1.0.0) there are no rollup metrics.
 
 ### Multi Account: Configuration JSON
 If you want to query metrics from multiple accounts and post to a specific result account, you must setup a JSON config file of your own. Then before you run the plugin you want to set an environment variable ```NODE_ENV``` with a value of the name of your configuration. Here is an example of how to setup a custom JSON file with multiple sets of keys. At runtime you must set NODE_ENV to the name of this config. (Note that if you want to change the GUID you can put a new value in your custom config and it will over-ride the value in default.json.)
