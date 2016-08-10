@@ -1,7 +1,7 @@
 {
+  "licenseKey": "NEWRELIC_LICENSE_KEY",
   "newrelic": {
     "accountId": "NEWRELIC_ACCOUNT_ID",
-    "insightsQueryKey": "NEWRELIC_INSIGHTS_QUERY_KEY",
-    "licenseKey": "NEWRELIC_LICENSE_KEY"
+    "insightsQueryKey": "NEWRELIC_INSIGHTS_QUERY_KEY"
   }
 }

@@ -1,9 +1,9 @@
 {
   "guid": "com.newrelic.fit.synthetics.monitor.Synthetics",
   "duration": 30,
+  "licenseKey": "",
   "newrelic": {
     "accountId": "",
-    "insightsQueryKey": "",
-    "licenseKey": ""
+    "insightsQueryKey": ""
   }
 }
