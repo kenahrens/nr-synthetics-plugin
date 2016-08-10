@@ -1,8 +1,7 @@
 {
   "newrelic": {
     "accountId": "",
-    "restKey": "",
-    "adminKey": "",
-    "insightsQueryKey": ""
+    "insightsQueryKey": "",
+    "licenseKey": ""
   }
 }

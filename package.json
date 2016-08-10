@@ -15,8 +15,11 @@
   "license": "MIT",
   "dependencies": {
     "commander": "^2.9.0",
+    "config": "^1.21.0",
     "cron": "^1.1.0",
-    "newrelic-api-client": "0.0.3"
+    "newrelic-api-client": "0.0.4",
+    "request": "^2.74.0",
+    "winston": "^2.2.0"
   },
   "devDependencies": {
     "mocha": "^3.0.2"

@@ -1,5 +1,4 @@
-const client = require('newrelic-api-client');
-const insights = client.insights;
+const insights = require('../lib/insights.js');
 var assert = require('assert');
 
 var quickAssert = function(error, response) {
