@@ -1,4 +1,6 @@
 {
+  "guid": "com.newrelic.fit.synthetics.monitor.Synthetics",
+  "duration": 30,
   "newrelic": {
     "accountId": "",
     "insightsQueryKey": "",
