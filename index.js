@@ -24,7 +24,10 @@ var reportMetric = function(monitorName, successRate, configId) {
   metricArr[successMetricName] = successRate;
   metricArr[failMetricName] = 100 - successRate;
   plugins.post(metricArr, configId, function(error, response, body) {
-    if (response.statusCode != 200) {
+    if (error) {
+      logger.error('Error in Plugin POST');
+      logger.error(error);
+    } else if (response.statusCode != 200) {
       logger.error('Response to Plugin POST: ' + response.statusCode);
       logger.error(body);
     }
@@ -36,7 +39,7 @@ var getLocationStatus = function(monitorName, configId) {
   logger.debug('getLocationStatus for: ' + monitorName);
   var nrql = locationStatusNRQL.replace('{monitorName}', monitorName);
   insights.query(nrql, configId, function(error, response, body) {
-    if (response.statusCode == 200) {
+    if (!error && response.statusCode == 200) {
       var facets = body.facets;
       var success = 0;
       for (var i = 0; i < facets.length; i++) {
@@ -48,8 +51,13 @@ var getLocationStatus = function(monitorName, configId) {
       var successRate = 100 * success / facets.length;
       reportMetric(monitorName, successRate, configId);
     } else {
-      logger.error('Response to Insights location status: ' + response.statusCode);
-      logger.error(body);
+      if (error) {
+        logger.error('Error on Insights location status call');
+        logger.error(error);
+      } else {
+        logger.error('Response to Insights location status: ' + response.statusCode);
+        logger.error(body);
+      }
     }
   });
 }
@@ -59,15 +67,20 @@ var getMonitorList = function(configId) {
   logger.info('getMonitorList for: ' + configId);
   var nrql = monitorListNQRL;
   insights.query(nrql, configId, function(error, response, body) {
-    if (response.statusCode == 200) {
+    if (!error && response.statusCode == 200) {
       var monitors = body.results[0].members;
       for (var i = 0; i < monitors.length; i++) {
         var monitorName = monitors[i];
         getLocationStatus(monitorName, configId);
       }
     } else {
-      logger.error('Response to Insights monitor list: ' + response.statusCode);
-      logger.error(body);
+      if (error) {
+        logger.error('Error on Insights monitor list call');
+        logger.error(error);
+      } else {
+        logger.error('Response to Insights monitor list: ' + response.statusCode);
+        logger.error(body);
+      }
     }
   });
 }
