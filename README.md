@@ -49,7 +49,7 @@ If you want to query metrics from a single account and post to the same account,
 * NEWRELIC_ACCOUNT_ID maps to accountId
 * NEWRELIC_INSIGHTS_QUERY_KEY maps to insightsQueryKey (for plugin to query metrics)
 
-### Running the Plugin
+### Running the Plugin Directly
 You can run the plugin directly like so:
 ```
 kahrens:nr-synthetics-plugin kahrens$ npm start
@@ -60,12 +60,35 @@ kahrens:nr-synthetics-plugin kahrens$ npm start
 Wed, 10 Aug 2016 12:48:32 GMT - info: Synthetics Plugin started
 ```
 
-Or you can use something like forever to launch the plugin (and re-launch if it crashes):
+## Running the Plugin with Forever
+Or you can use forever to launch the plugin (and re-launch if it crashes):
 ```
 kahrens:nr-synthetics-plugin kahrens$ ./node_modules/forever/bin/forever start index.js 
 warn:    --minUptime not set. Defaulting to: 1000ms
 warn:    --spinSleepTime not set. Your script will exit if it does not stay up for at least 1000ms
 info:    Forever processing file: index.js
+```
+
+This is how you get a list of all your forever processes:
+```
+kahrens:nr-synthetics-plugin kahrens$ ./node_modules/forever/bin/forever list
+info:    Forever processes running
+data:        uid  command             script   forever pid   id logfile                          uptime      
+data:    [0] UKn_ /usr/local/bin/node index.js 70782   70783    /Users/kahrens/.forever/UKn_.log 0:0:0:8.935 
+```
+
+And this is how you get the log:
+```
+kahrens:nr-synthetics-plugin kahrens$ ./node_modules/forever/bin/forever logs 0
+data:    index.js:70783 - Mon, 22 Aug 2016 12:37:04 GMT - info: Synthetics Plugin started
+data:    index.js:70783 - Mon, 22 Aug 2016 12:37:30 GMT - info: Starting poll cycle with env: undefined
+data:    index.js:70783 - Mon, 22 Aug 2016 12:37:30 GMT - info: getMonitorList for: newrelic
+data:    index.js:70783 - Mon, 22 Aug 2016 12:38:00 GMT - info: Starting poll cycle with env: undefined
+data:    index.js:70783 - Mon, 22 Aug 2016 12:38:00 GMT - info: getMonitorList for: newrelic
+data:    index.js:70783 - Mon, 22 Aug 2016 12:38:30 GMT - info: Starting poll cycle with env: undefined
+data:    index.js:70783 - Mon, 22 Aug 2016 12:38:30 GMT - info: getMonitorList for: newrelic
+data:    index.js:70783 - Mon, 22 Aug 2016 12:39:00 GMT - info: Starting poll cycle with env: undefined
+data:    index.js:70783 - Mon, 22 Aug 2016 12:39:00 GMT - info: getMonitorList for: newrelic
 ```
 
 ### Running the Tests
