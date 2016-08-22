@@ -80,15 +80,18 @@ data:    [0] UKn_ /usr/local/bin/node index.js 70782   70783    /Users/kahrens/.
 And this is how you get the log:
 ```
 kahrens:nr-synthetics-plugin kahrens$ ./node_modules/forever/bin/forever logs 0
-data:    index.js:70783 - Mon, 22 Aug 2016 12:37:04 GMT - info: Synthetics Plugin started
-data:    index.js:70783 - Mon, 22 Aug 2016 12:37:30 GMT - info: Starting poll cycle with env: undefined
-data:    index.js:70783 - Mon, 22 Aug 2016 12:37:30 GMT - info: getMonitorList for: newrelic
-data:    index.js:70783 - Mon, 22 Aug 2016 12:38:00 GMT - info: Starting poll cycle with env: undefined
-data:    index.js:70783 - Mon, 22 Aug 2016 12:38:00 GMT - info: getMonitorList for: newrelic
-data:    index.js:70783 - Mon, 22 Aug 2016 12:38:30 GMT - info: Starting poll cycle with env: undefined
-data:    index.js:70783 - Mon, 22 Aug 2016 12:38:30 GMT - info: getMonitorList for: newrelic
-data:    index.js:70783 - Mon, 22 Aug 2016 12:39:00 GMT - info: Starting poll cycle with env: undefined
-data:    index.js:70783 - Mon, 22 Aug 2016 12:39:00 GMT - info: getMonitorList for: newrelic
+data:    index.js:71019 - Mon, 22 Aug 2016 12:45:59 GMT - info: Synthetics Plugin started
+data:    index.js:71019 - Mon, 22 Aug 2016 12:46:00 GMT - info: Starting poll cycle with env: multi
+data:    index.js:71019 - Mon, 22 Aug 2016 12:46:00 GMT - info: getMonitorList for: Ahrens Design Group
+data:    index.js:71019 - Mon, 22 Aug 2016 12:46:00 GMT - info: getMonitorList for: Demotron
+```
+
+This is how you stop your plugin, then run ```list``` to see it's no longer running.
+```
+kahrens:nr-synthetics-plugin kahrens$ ./node_modules/forever/bin/forever stop index.js 
+info:    Forever stopped process:
+    uid  command             script   forever pid   id logfile                          uptime      
+[0] UKn_ /usr/local/bin/node index.js 70782   70783    /Users/kahrens/.forever/UKn_.log 0:0:8:0.212 
 ```
 
 ### Running the Tests
