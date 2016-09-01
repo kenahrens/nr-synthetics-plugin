@@ -30,15 +30,18 @@ If you want to query metrics from multiple accounts and post to a specific resul
   ],
   "MasterAccount": {
     "accountId": "",
-    "insightsQueryKey": ""
+    "insightsQueryKey": "",
+    "insightsInsertKey": ""
   },
   "SubAccount1": {
     "accountId": "",
-    "insightsQueryKey": ""
+    "insightsQueryKey": "",
+    "insightsInsertKey": ""
   },
   "SubAccount2": {
     "accountId": "",
-    "insightsQueryKey": ""
+    "insightsQueryKey": "",
+    "insightsInsertKey": ""
   }
 }
 ```
@@ -48,6 +51,7 @@ If you want to query metrics from a single account and post to the same account,
 * NEWRELIC_LICENSE_KEY maps to licenseKey (for plugin to publish metrics)
 * NEWRELIC_ACCOUNT_ID maps to accountId
 * NEWRELIC_INSIGHTS_QUERY_KEY maps to insightsQueryKey (for plugin to query metrics)
+* NEWRELIC_INSIGHTS_INSERT_KEY maps to insightsInsertKey (for plugin to publish events)
 
 ### Running the Plugin Directly
 You can run the plugin directly like so:
