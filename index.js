@@ -7,7 +7,7 @@ var logger = new (winston.Logger)({
   transports: [
     new (winston.transports.Console)({
       timestamp: function() {return new Date().toUTCString();},
-      level: 'debug'
+      level: 'info'
     })
   ]
 })
@@ -109,7 +109,7 @@ var getMonitorList = function(configId) {
 }
 
 // Run every {duration} seconds
-var cronTime = '*/15 * * * * *';
+var cronTime = '*/30 * * * * *';
 var job = new CronJob(cronTime, function() {
   logger.info('Starting poll cycle with env: ' + process.env.NODE_ENV);
   var configArr = config.get('configArr');
