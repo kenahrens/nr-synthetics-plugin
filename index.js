@@ -45,15 +45,15 @@ var reportMetric = function(monitorName, successRate, configId) {
   var metricArr = {};
   metricArr[successMetricName] = successRate;
   metricArr[failMetricName] = 100 - successRate;
-  // plugins.post(metricArr, configId, function(error, response, body) {
-  //   if (error) {
-  //     logger.error('Error in Plugin POST');
-  //     logger.error(error);
-  //   } else if (response.statusCode != 200) {
-  //     logger.error('Response to Plugin POST: ' + response.statusCode);
-  //     logger.error(body);
-  //   }
-  // });
+  plugins.post(metricArr, configId, function(error, response, body) {
+    if (error) {
+      logger.error('Error in Plugin POST');
+      logger.error(error);
+    } else if (response.statusCode != 200) {
+      logger.error('Response to Plugin POST: ' + response.statusCode);
+      logger.error(body);
+    }
+  });
 }
 
 // Get the location status for the given monitor
