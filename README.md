@@ -1,50 +1,35 @@
 # New Relic Synthetics Plugin
 [![Build Status](https://travis-ci.org/kenahrens/nr-synthetics-plugin.svg?branch=master)](https://travis-ci.org/kenahrens/nr-synthetics-plugin)
 
-This plugin runs queries against New Relic Insights to calculate things like % of locations with a failure.
+This plugin runs queries against New Relic Insights to calculate things like % of locations with a failure. It works by querying Insights every 30 seconds, calculating the new metrics (like % of failing locations) and publishing the results as Plugin metrics.
 
 ## Installation and Setup
 Here are the steps to get set up with this plugin:
 * Pre-requisite is NodeJS (4.x or newer) and npm
 * Clone or download this repository
 * Once in the directory run ```npm install```
-* Setup your configuration either for single account or multi account
+* Setup your configuration for a single account
 
 Once you are all set up you can run the plugin with ```npm start```
 
 ## Metrics Included
-This plugin currently calculates and publishes the following metrics:
-* Component/{monitorName}/Location Success[pct]
-* Component/{monitorName}/Location Fail[pct]
+For every monitor that has reported data, this plugin currently will calculate and publish the following metrics:
+* Component/Location/{locationName}/Success[pct]
+* Component/Location/{locationName}/Failure[pct]
+* Component/Location/{locationName}/Duration[ms]
+* Component/Overall/Success[pct]
+* Component/Overall/Success[count]
+* Component/Overall/Failure[pct]
+* Component/Overall/Failure[count]
+* Component/Overall/Duration[ms]
 
-At this time (version 1.0.0) there are no rollup metrics.
+## Configure for a Single Account
+There is a config file default.json which defines the required keys. You have 2 options for how to configure the keys:
+* Config File: Copy default.json and create your own config file
+* Environment Variables: Set environment variables
 
-### Multi Account: Configuration JSON
-If you want to query metrics from multiple accounts and post to a specific result account, you must setup a JSON config file of your own. Then before you run the plugin you want to set an environment variable ```NODE_ENV``` with a value of the name of your configuration. Here is an example of how to setup a custom JSON file with multiple sets of keys. At runtime you must set NODE_ENV to the name of this config. (Note that if you want to change the GUID you can put a new value in your custom config and it will over-ride the value in default.json.)
-```
-{
-  "configArr": [
-    "MasterAccount",
-    "SubAccount1",
-    "SubAccount2"
-  ],
-  "MasterAccount": {
-    "accountId": "",
-    "insightsQueryKey": "",
-    "insightsInsertKey": ""
-  },
-  "SubAccount1": {
-    "accountId": "",
-    "insightsQueryKey": "",
-    "insightsInsertKey": ""
-  },
-  "SubAccount2": {
-    "accountId": "",
-    "insightsQueryKey": "",
-    "insightsInsertKey": ""
-  }
-}
-```
+### Single Account: Config file
+Copy default.json and make your own file like ken-config.json. At runtime you must define an environment variable ```NODE_ENV``` and set to the name of your file (do not include the extension).
 
 ### Single Account: Environment Variables
 If you want to query metrics from a single account and post to the same account, you can just set these 3 environment variables:
@@ -58,10 +43,13 @@ You can run the plugin directly like so:
 ```
 kahrens:nr-synthetics-plugin kahrens$ npm start
 
-> nr-synthetics-plugin@1.0.0 start /Users/kahrens/Documents/github/nr-synthetics-plugin
+> nr-synthetics-plugin@2.0.0 start /Users/kahrens/Documents/github/nr-synthetics-plugin
 > node index.js
 
-Wed, 10 Aug 2016 12:48:32 GMT - info: Synthetics Plugin started
+Tue, 20 Sep 2016 13:35:29 GMT - info: Synthetics Plugin started:
+Tue, 20 Sep 2016 13:35:29 GMT - info: * GUID: com.adg.synthetics.monitor.Synthetics
+Tue, 20 Sep 2016 13:35:29 GMT - info: * Frequency is every 30s, cron: (*/30 * * * * *)
+Tue, 20 Sep 2016 13:35:29 GMT - info: * Running as a single config.
 ```
 
 ## Running the Plugin with Forever
