@@ -3,6 +3,8 @@ const plugins = require('./lib/plugins.js');
 const config = require('config');
 const CronJob = require('cron').CronJob;
 const winston = require('winston');
+const version = require('./package.json').version;
+
 var logger = new (winston.Logger)({
   transports: [
     new (winston.transports.Console)({
@@ -23,31 +25,36 @@ var guid = config.get('guid');
 var cronTime = '*/' + freq + ' * * * * *';
 var single = true;
 
-// Publish the event to the Insights API
-// var reportEvent = function(monitorName, successRate, configId) {
-//   var event = {};
-//   event.eventType = 'SyntheticsLocation';
-//   event.timestamp = new Date().getTime();
-//   event.monitorName = monitorName;
-//   event.successRate = successRate;
-
-//   logger.debug('reportEvent: ');
-//   logger.debug(event);
-//   insights.publish(event, configId, function(error, response, body) {
-//     if (error) {
-//       logger.error('Error in Insights POST');
-//       logger.error(error);
-//     } else if (response.statusCode != 200) {
-//       logger.error('Response to Insights POST: ' + response.statusCode);
-//       logger.error(body);
-//     }
-//   });
-// }
-
-var reportMetric = function(monitorName, metricArr, configId) {
-  plugins.post(monitorName, metricArr, configId, function(error, response, body) {
+// This will report the data from the Metric Array to Insights
+var reportEvent = function(monitorName, insightsMetricArr, configId) {
+  var event = {};
+  event.eventType = 'ExtraSyntheticsInfo';
+  event.timestamp = new Date().getTime();
+  event.monitorName = monitorName;
+  for (var attribute in insightsMetricArr) {
+    event[attribute] = insightsMetricArr[attribute];
+  }
+  
+  insights.publish(event, configId, function(error, response, body) {
     if (!error && response.statusCode == 200) {
-      logger.debug('Posted ' + Object.keys(metricArr).length + ' metrics to ' + monitorName);
+      logger.debug('Posted Insights event for ' + monitorName);
+    } else {
+      if (error) {
+        logger.error('Error in Insights POST');
+        logger.error(error);
+      } else {
+        logger.error('Response to Insights POST: ' + response.statusCode);
+        logger.error(body);
+      }
+    }
+  });
+}
+
+// This will report the data from the Metric Array to Plugins
+var reportMetric = function(monitorName, pluginMetricArr, configId) {
+  plugins.post(monitorName, pluginMetricArr, configId, function(error, response, body) {
+    if (!error && response.statusCode == 200) {
+      logger.debug('Posted ' + Object.keys(pluginMetricArr).length + ' metrics to ' + monitorName);
     } else {
       if (error) {
         logger.error('Error in Plugin POST');
@@ -66,7 +73,8 @@ var reportMetric = function(monitorName, metricArr, configId) {
 var calculateMetrics = function(monitorName, facets, configId) {
   var successCount = 0;
   var sumDuration = 0;
-  var metricArr = {};
+  var pluginMetricArr = {};
+  var insightsMetricArr = {};
   
   for (var i = 0; i < facets.length; i++) {
     var locationName = 'Location/' + facets[i].name;
@@ -77,16 +85,16 @@ var calculateMetrics = function(monitorName, facets, configId) {
     var metricSuccessPct = plugins.makeMetricName(locationName, 'Success', 'pct');
     var metricFailPct = plugins.makeMetricName(locationName, 'Failure', 'pct');
     var metricDuration = plugins.makeMetricName(locationName, 'Duration', 'ms');
-    metricArr[metricDuration] = locDuration;
+    pluginMetricArr[metricDuration] = locDuration;
 
     sumDuration += locDuration;
     if (locResult == 'SUCCESS') {
       successCount++;
-      metricArr[metricSuccessPct] = 100;
-      metricArr[metricFailPct] = 0;
+      pluginMetricArr[metricSuccessPct] = 100;
+      pluginMetricArr[metricFailPct] = 0;
     } else {
-      metricArr[metricSuccessPct] = 0;
-      metricArr[metricFailPct] = 100;
+      pluginMetricArr[metricSuccessPct] = 0;
+      pluginMetricArr[metricFailPct] = 100;
     }
   }
 
@@ -100,15 +108,23 @@ var calculateMetrics = function(monitorName, facets, configId) {
   var metricRollupFailPct = plugins.makeMetricName('Overall', 'Failure', 'pct');
   var metricRollupDuration = plugins.makeMetricName('Overall', 'Duration', 'ms');
   
-  // Store the values in the metric array
-  metricArr[metricRollupSuccessCount] = successCount;
-  metricArr[metricRollupSuccessPct] = successRate;
-  metricArr[metricRollupFailCount] = facets.length - successCount;
-  metricArr[metricRollupFailPct] = 100 - successRate;
-  metricArr[metricRollupDuration] = avgDuration;
+  // Store the values in the plugin metric array
+  pluginMetricArr[metricRollupSuccessCount] = successCount;
+  pluginMetricArr[metricRollupSuccessPct] = successRate;
+  pluginMetricArr[metricRollupFailCount] = facets.length - successCount;
+  pluginMetricArr[metricRollupFailPct] = 100 - successRate;
+  pluginMetricArr[metricRollupDuration] = avgDuration;
 
-  reportMetric(monitorName, metricArr, configId);
-  // reportEvent(monitorName, successRate, configId);
+  // Store the values in the insights metric array
+  insightsMetricArr['successCount'] = successCount;
+  insightsMetricArr['successRate'] = successRate;
+  insightsMetricArr['failCount'] = facets.length - successCount;
+  insightsMetricArr['failRate'] = 100 - successRate;
+  insightsMetricArr['locationCount'] = facets.length;
+  insightsMetricArr['duration'] = avgDuration;
+  
+  reportMetric(monitorName, pluginMetricArr, configId);
+  reportEvent(monitorName, insightsMetricArr, configId);
 }
 
 // Get the location status and duration for the given monitor
@@ -169,7 +185,7 @@ var job = new CronJob(cronTime, function() {
 });
 
 // Determine if this is single config or multi config
-logger.info('Synthetics Plugin started:');
+logger.info('Synthetics Plugin version: ' + version + ' started:');
 logger.info('* GUID: ' + guid);
 logger.info('* Frequency is every ' + freq + 's, cron: (' + cronTime + ')');
 if (configArr.length == 1) {
