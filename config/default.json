@@ -2,6 +2,7 @@
   "guid": "com.adg.synthetics.monitor.Synthetics",
   "duration": 30,
   "licenseKey": "",
+  "logLevel": "info",
   "configArr": [
     "newrelic"
   ],
