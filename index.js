@@ -164,7 +164,7 @@ var getLocationStatus = function(monitorName, configId) {
   var nrql = locationStatusNRQL.replace('{monitorName}', monitorName);
   insights.query(nrql, configId, function(error, response, body) {
     if (!error && response.statusCode == 200) {
-      calculateMetrics(monitorName, body.facets, configId);
+      calculateMetrics(monitorName.replace('\\\'', '_'), body.facets, configId);
     } else {
       if (error) {
         logger.error('Error on Insights location status call');
