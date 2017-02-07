@@ -5,25 +5,30 @@ const CronJob = require('cron').CronJob;
 const winston = require('winston');
 const version = require('./package.json').version;
 
-var logger = new (winston.Logger)({
-  transports: [
-    new (winston.transports.Console)({
-      timestamp: function() {return new Date().toUTCString();},
-      level: 'info'
-    })
-  ]
-})
-
 // Insights queries
 var monitorListNQRL = "SELECT uniques(monitorName) FROM SyntheticCheck";
-var locationStatusNRQL = "SELECT latest(result), latest(duration) FROM SyntheticCheck FACET locationLabel WHERE monitorName = '{monitorName}' LIMIT 100"
+var locationStatusNRQL = "SELECT latest(result), latest(duration), latest(id) FROM SyntheticCheck FACET locationLabel WHERE monitorName = '{monitorName}' LIMIT 100"
 
 // Global variables
 var freq = config.get('duration');
 var configArr = config.get('configArr')
 var guid = config.get('guid');
+var logLevel = config.get('logLevel') || 'info';
 var cronTime = '*/' + freq + ' * * * * *';
 var single = true;
+
+var logger = new (winston.Logger)({
+  transports: [
+    new (winston.transports.Console)({
+      timestamp: function() {return new Date().toUTCString();},
+      level: logLevel
+    })
+  ]
+})
+
+// Used to keep track of synthetic checks that have already been reported
+// Structure: {monitorName: {locationName: locationId}}
+var reportedChecks = {};
 
 // This will report the data from the Metric Array to Insights
 var reportEvent = function(monitorName, insightsMetricArr, configId) {
@@ -34,7 +39,7 @@ var reportEvent = function(monitorName, insightsMetricArr, configId) {
   for (var attribute in insightsMetricArr) {
     event[attribute] = insightsMetricArr[attribute];
   }
-  
+
   insights.publish(event, configId, function(error, response, body) {
     if (!error && response.statusCode == 200) {
       logger.debug('Posted Insights event for ' + monitorName);
@@ -71,16 +76,36 @@ var reportMetric = function(monitorName, pluginMetricArr, configId) {
 // Result % (success / fail) and Duration per location
 // Overall Result % (success / fail) and Duration
 var calculateMetrics = function(monitorName, facets, configId) {
+  if (facets.length == 0) {
+    return;
+  }
+
+  var checksToReport = 0;
   var successCount = 0;
   var sumDuration = 0;
   var pluginMetricArr = {};
   var insightsMetricArr = {};
-  
+  var thisMonitorReportedChecks = {};
+
+  if (monitorName in reportedChecks) {
+    thisMonitorReportedChecks = reportedChecks[monitorName];
+  }
+
   for (var i = 0; i < facets.length; i++) {
     var locationName = 'Location/' + facets[i].name;
     var locResult = facets[i].results[0].latest;
     var locDuration = facets[i].results[1].latest;
-    
+    var locId = facets[i].results[2].latest;
+
+    if (locationName in thisMonitorReportedChecks && thisMonitorReportedChecks[locationName] == locId) {
+      logger.debug(locId + " already reported on for " + monitorName + " at " + locationName);
+      continue;
+    } else {
+      logger.debug(locId + " will be reported on for " + monitorName + " at " + locationName);
+      thisMonitorReportedChecks[locationName] = locId;
+      checksToReport++;
+    }
+
     // Create the metric names for this location
     var metricSuccessPct = plugins.makeMetricName(locationName, 'Success', 'pct');
     var metricFailPct = plugins.makeMetricName(locationName, 'Failure', 'pct');
@@ -98,31 +123,37 @@ var calculateMetrics = function(monitorName, facets, configId) {
     }
   }
 
-  var successRate = 100 * successCount / facets.length;
-  var avgDuration = sumDuration / facets.length;
+  reportedChecks[monitorName] = thisMonitorReportedChecks;
+  if(checksToReport == 0) {
+    logger.debug("No new checks to report on for " + monitorName);
+    return;
+  }
+
+  var successRate = 100 * successCount / checksToReport;
+  var avgDuration = sumDuration / checksToReport;
 
   // Create the rollup metric names
-  var metricRollupSuccessCount = plugins.makeMetricName('Overall', 'Success', 'count'); 
+  var metricRollupSuccessCount = plugins.makeMetricName('Overall', 'Success', 'count');
   var metricRollupSuccessPct = plugins.makeMetricName('Overall', 'Success', 'pct');
-  var metricRollupFailCount = plugins.makeMetricName('Overall', 'Failure', 'count'); 
+  var metricRollupFailCount = plugins.makeMetricName('Overall', 'Failure', 'count');
   var metricRollupFailPct = plugins.makeMetricName('Overall', 'Failure', 'pct');
   var metricRollupDuration = plugins.makeMetricName('Overall', 'Duration', 'ms');
-  
+
   // Store the values in the plugin metric array
   pluginMetricArr[metricRollupSuccessCount] = successCount;
   pluginMetricArr[metricRollupSuccessPct] = successRate;
-  pluginMetricArr[metricRollupFailCount] = facets.length - successCount;
+  pluginMetricArr[metricRollupFailCount] = checksToReport - successCount;
   pluginMetricArr[metricRollupFailPct] = 100 - successRate;
   pluginMetricArr[metricRollupDuration] = avgDuration;
 
   // Store the values in the insights metric array
   insightsMetricArr['successCount'] = successCount;
   insightsMetricArr['successRate'] = successRate;
-  insightsMetricArr['failCount'] = facets.length - successCount;
+  insightsMetricArr['failCount'] = checksToReport - successCount;
   insightsMetricArr['failRate'] = 100 - successRate;
-  insightsMetricArr['locationCount'] = facets.length;
+  insightsMetricArr['locationCount'] = checksToReport;
   insightsMetricArr['duration'] = avgDuration;
-  
+
   reportMetric(monitorName, pluginMetricArr, configId);
   reportEvent(monitorName, insightsMetricArr, configId);
 }
@@ -154,7 +185,8 @@ var getMonitorList = function(configId) {
     if (!error && response.statusCode == 200) {
       var monitors = body.results[0].members;
       for (var i = 0; i < monitors.length; i++) {
-        var monitorName = monitors[i];
+        // "'" is a valid char in monitor names ¯\_(ツ)_/¯
+        var monitorName = monitors[i].replace('\'', '\\\'');
         getLocationStatus(monitorName, configId);
       }
     } else {
@@ -176,8 +208,8 @@ var job = new CronJob(cronTime, function() {
     env = 'default';
   }
   logger.info('Starting poll cycle with NODE_ENV Environment: ' + env);
-  
-  // Loop through each of the configurations 
+
+  // Loop through each of the configurations
   for (var i = 0; i < configArr.length; i++) {
     var configId = configArr[i];
     getMonitorList(configId);
@@ -195,4 +227,8 @@ if (configArr.length == 1) {
   logger.info('* Running as a multi config.');
   single = false;
 }
+if(logLevel != 'info') {
+  logger.info('Log level set to ' + logLevel);
+}
+
 job.start();
