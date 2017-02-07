@@ -27,7 +27,7 @@ var logger = new (winston.Logger)({
 })
 
 // Used to keep track of synthetic checks that have already been reported
-// Structure: {monitorName: {locationName: locationId}}
+// Structure: {monitorName: {locationName: checkId}}
 var reportedChecks = {};
 
 // This will report the data from the Metric Array to Insights
