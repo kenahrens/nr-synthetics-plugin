@@ -16,7 +16,7 @@ var logger = new (winston.Logger)({
 
 // Insights queries
 var monitorListNQRL = "SELECT uniques(monitorName) FROM SyntheticCheck";
-var locationStatusNRQL = "SELECT latest(result), latest(duration) FROM SyntheticCheck FACET locationLabel WHERE monitorName = '{monitorName}' LIMIT 100"
+var locationStatusNRQL = "SELECT latest(result), latest(duration) FROM SyntheticCheck FACET locationLabel WHERE monitorName = '{monitorName}' SINCE 15 minutes ago LIMIT 100"
 
 // Global variables
 var freq = config.get('duration');
