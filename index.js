@@ -130,7 +130,8 @@ var calculateMetrics = function(monitorName, facets, configId) {
 // Get the location status and duration for the given monitor
 var getLocationStatus = function(monitorName, configId) {
   logger.debug('getLocationStatus for: ' + monitorName);
-  var nrql = locationStatusNRQL.replace('{monitorName}', monitorName);
+  var escapedName = monitorName.replace('\'', '\\\'');
+  var nrql = locationStatusNRQL.replace('{monitorName}', escapedName);
   insights.query(nrql, configId, function(error, response, body) {
     if (!error && response.statusCode == 200) {
       calculateMetrics(monitorName, body.facets, configId);
