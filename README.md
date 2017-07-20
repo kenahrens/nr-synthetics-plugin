@@ -29,7 +29,17 @@ There is a config file default.json which defines the required keys. You have 2 
 * Environment Variables: Set environment variables
 
 ### Single Account: Config file
-Copy default.json and make your own file like ken-config.json. At runtime you must define an environment variable ```NODE_ENV``` and set to the name of your file (do not include the extension).
+Copy default.json and make your own file like ken-config.json. At runtime you must define an environment variable `NODE_ENV` and set to the name of your file (do not include the extension).
+```
+kahrens@envy5:~/dev/node/nr-synthetics-plugin$ ls -al config/
+total 20
+drwxrwxr-x 2 kahrens kahrens 4096 Mar 27 10:41 .
+drwxrwxr-x 7 kahrens kahrens 4096 Jun 26 15:28 ..
+-rw-rw-r-- 1 kahrens kahrens  359 Mar 27 10:41 ahrens.json
+-rw-rw-r-- 1 kahrens kahrens  214 Mar 27 10:15 custom-environment-variables.json
+-rw-rw-r-- 1 kahrens kahrens  226 Mar 27 10:15 default.json
+kahrens@envy5:~/dev/node/nr-synthetics-plugin$ export NODE_ENV=ahrens
+```
 
 ### Single Account: Environment Variables
 If you want to query metrics from a single account and post to the same account, you can just set these 3 environment variables:
@@ -39,17 +49,21 @@ If you want to query metrics from a single account and post to the same account,
 * NEWRELIC_INSIGHTS_INSERT_KEY maps to insightsInsertKey (for plugin to publish events)
 
 ### Running the Plugin Directly
-You can run the plugin directly like so:
+You can run the plugin directly like so. Note that it picked up my NODE_ENV that I set earlier to `ahrens`.
 ```
-kahrens:nr-synthetics-plugin kahrens$ npm start
+kahrens@envy5:~/dev/node/nr-synthetics-plugin$ npm start
 
-> nr-synthetics-plugin@2.0.0 start /Users/kahrens/Documents/github/nr-synthetics-plugin
+> nr-synthetics-plugin@2.1.1 start /home/kahrens/dev/node/nr-synthetics-plugin
 > node index.js
 
-Tue, 20 Sep 2016 13:35:29 GMT - info: Synthetics Plugin started:
-Tue, 20 Sep 2016 13:35:29 GMT - info: * GUID: com.adg.synthetics.monitor.Synthetics
-Tue, 20 Sep 2016 13:35:29 GMT - info: * Frequency is every 30s, cron: (*/30 * * * * *)
-Tue, 20 Sep 2016 13:35:29 GMT - info: * Running as a single config.
+Thu, 20 Jul 2017 14:27:33 GMT - info: Synthetics Plugin version: 2.1.1 started:
+Thu, 20 Jul 2017 14:27:33 GMT - info: * GUID: com.adg.synthetics.monitor.Synthetics
+Thu, 20 Jul 2017 14:27:33 GMT - info: * Frequency is every 30s, cron: (*/30 * * * * *)
+Thu, 20 Jul 2017 14:27:33 GMT - info: * Running as a single config.
+Thu, 20 Jul 2017 14:28:00 GMT - info: Starting poll cycle with NODE_ENV Environment: ahrens
+Thu, 20 Jul 2017 14:28:00 GMT - info: - Query by location: (14) locations < (55) monitors
+Thu, 20 Jul 2017 14:28:01 GMT - info: - There are: 55 monitors
+Thu, 20 Jul 2017 14:28:01 GMT - info: - Processing complete for : 55 monitors
 ```
 
 ## Running the Plugin with Forever
