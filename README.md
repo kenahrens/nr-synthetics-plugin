@@ -4,6 +4,11 @@
 This plugin runs queries against New Relic Insights to calculate things like % of locations with a failure. It works by querying Insights every 30 seconds, calculating the new metrics (like % of failing locations) and publishing the results as Plugin metrics.
 
 ## Installation and Setup
+There are currently 2 options for running this plugin:
+* Run the plugin directly through NodeJS
+* Run the plugin as a Docker container
+
+## Setup and Run Directly
 Here are the steps to get set up with this plugin:
 * Pre-requisite is NodeJS (4.x or newer) and npm
 * Clone or download this repository
@@ -11,6 +16,15 @@ Here are the steps to get set up with this plugin:
 * Setup your configuration for a single account
 
 Once you are all set up you can run the plugin with ```npm start```
+
+## Setup and Run as Docker Container
+Thanks to @ntkach there are now some Docker files. Here's how you run through Docker.
+* Pre-requisite is NodeJS (4.x or newer) and npm
+* Clone or download this repository
+* Once in the directory run ```npm install```
+* Create the ENV variables (see the 4 required variables below)
+* Build the container with something such as: ```docker build -t nr-synthetics-plugin .```
+* Run the container detatched with the compose file: ```docker-compose up -d```
 
 ## Metrics Included
 For every monitor that has reported data, this plugin currently will calculate and publish the following metrics:
