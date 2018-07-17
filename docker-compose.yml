@@ -1,0 +1,9 @@
+version: '2'
+services:
+  nr-synthetics-plugin:
+    image: nr-synthetics-plugin
+    environment:
+      - NEWRELIC_LICENSE_KEY
+      - NEWRELIC_ACCOUNT_ID
+      - NEWRELIC_INSIGHTS_QUERY_KEY
+      - NEWRELIC_INSIGHTS_INSERT_KEY

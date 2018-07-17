@@ -1,0 +1,8 @@
+.git/*
+.gitignore
+.travis.yml
+Dockerfile
+docker-compose.yml
+README.md
+nr.env
+test/*
