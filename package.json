@@ -1,6 +1,6 @@
 {
   "name": "nr-synthetics-plugin",
-  "version": "2.1.1",
+  "version": "2.2.1",
   "description": "Query New Relic Synthetics and publish new metrics as Plugin",
   "main": "index.js",
   "repository": {
@@ -19,10 +19,17 @@
     "cron": "^1.1.0",
     "forever": "^0.15.2",
     "newrelic-api-client": "0.0.4",
+    "node-fetch": "^2.3.0",
+    "parse-link-header": "^1.0.1",
+    "q": "^1.5.1",
+    "querystring": "^0.2.0",
     "request": "^2.74.0",
     "winston": "^2.2.0"
   },
   "devDependencies": {
-    "mocha": "^3.0.2"
+    "chai": "^4.2.0",
+    "mocha": "^3.0.2",
+    "nock": "^10.0.2",
+    "sinon": "^7.1.1"
   }
 }

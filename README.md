@@ -10,7 +10,7 @@ There are currently 2 options for running this plugin:
 
 ## Setup and Run Directly
 Here are the steps to get set up with this plugin:
-* Pre-requisite is NodeJS (4.x or newer) and npm
+* Pre-requisite is NodeJS (7.10 or newer) and npm
 * Clone or download this repository
 * Once in the directory run ```npm install```
 * Setup your configuration for a single account
@@ -19,7 +19,7 @@ Once you are all set up you can run the plugin with ```npm start```
 
 ## Setup and Run as Docker Container
 Thanks to @ntkach there are now some Docker files. Here's how you run through Docker.
-* Pre-requisite is NodeJS (4.x or newer) and npm
+* Pre-requisite is NodeJS (7.10 or newer) and npm
 * Clone or download this repository
 * Once in the directory run ```npm install```
 * Create the ENV variables (see the 4 required variables below)
@@ -53,6 +53,94 @@ drwxrwxr-x 7 kahrens kahrens 4096 Jun 26 15:28 ..
 -rw-rw-r-- 1 kahrens kahrens  214 Mar 27 10:15 custom-environment-variables.json
 -rw-rw-r-- 1 kahrens kahrens  226 Mar 27 10:15 default.json
 kahrens@envy5:~/dev/node/nr-synthetics-plugin$ export NODE_ENV=ahrens
+```
+
+#### Donor and Recipient Account setup
+To setup a different event source (donor) and target (recipient) account Insights events, that is pulling Synthetics events and then publishing plugin metrics to a different account. 
+Set and add the following *optional* properties to your default.json file.
+
+```
+{
+    "licenseKey": "<Recipient account license key>"
+    "target":{
+       "accountId": "<Recipient   account ID>",    
+       "insightsInsertKey": "<Recipient Insights Insert key>",
+       "insightsQueryKey":"<Recipient Insights Query key>"
+     }
+
+}
+
+
+```
+
+Sample JSON:
+```
+{
+  "guid": "com.adg.synthetics.monitor.Synthetics",
+  "duration": 30,
+  "licenseKey": "888111-1112222333444555666",
+  "configArr": [
+    "newrelic"
+  ],
+  "newrelic": {
+    "accountId": "12345",
+    "insightsQueryKey": "12345-QueryKey",
+    "insightsInsertKey": "12345-InsertKey",
+  
+    "restAPIAdminKey":"12345-restAPIAdminkey"
+
+
+    "target":{
+      "accountId": "888111",
+      "insightsQueryKey":"888111-QueryKey",
+      "insightsInsertKey": "888111-InsertKey"
+    }
+  }
+}
+
+```
+
+
+##### Monitor retrieval using REST API
+For accounts with 1,000+ Synthetics monitors, use the Synthetics REST API to retrieve the monitors.   
+Set the value to the account owner/admin user API Key
+```
+{
+    "restAPIAdminKey": "Source REST API Admin key"
+}
+```
+
+Sample JSON
+
+Extract Synthetics events from source/donor account and publish Plugin metrics and Plugin custom Insights events to a recipient account.
+
+```
+
+{
+  "guid": "com.adg.synthetics.monitor.Synthetics",
+  "duration": 30,
+  "licenseKey": "888111-1112222333444555666",   <-- publish Plugin metrics to recipient account
+  "configArr": [
+    "newrelic"
+  ],
+  "newrelic": {
+    "accountId": "12345",
+    "insightsQueryKey": "12345-QueryKey",
+    "insightsInsertKey": "12345-InsertKey",
+  
+    "restAPIAdminKey":"12345-restAPIAdminkey",  <-- read from source account 12345
+
+
+    "target":{
+      "accountId": "888111",
+      "insightsQueryKey":"888111-QueryKey",     <-- query Insights events from recipient account
+      "insightsInsertKey": "888111-InsertKey"   <-- publish custom Insights events to recipient account
+    }
+    
+
+  }
+}
+
 ```
 
 ### Single Account: Environment Variables

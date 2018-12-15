@@ -7,6 +7,7 @@ const helper = require('./lib/helper.js');
 const insights = require('./lib/insights.js');
 const byMonitor = require('./lib/byMonitor.js');
 const byLocation = require('./lib/byLocation.js');
+const syntheticsAPI = require ('./lib/syntheticsAPI')
 
 // Insights queries
 var uniqueCountNRQL = "SELECT uniques(monitorName), uniques(locationLabel) FROM SyntheticCheck";
@@ -30,7 +31,7 @@ var getUniqueCounts = function(configId) {
       var monitorCount = monitors.length;
       var locations = body.results[1].members;
       var locationCount = locations.length;
-      
+
       // Determine which approach will call Insights the least (# of locations or # of monitors)
       if (monitorCount > locationCount) {
         logger.info('- Query by location: (' + locationCount + ') locations < (' + monitorCount + ') monitors');
@@ -42,6 +43,44 @@ var getUniqueCounts = function(configId) {
     }
   });
 }
+
+async function getAllMonitors(configId, adminAPIKey ) {
+
+    if ( (typeof(adminAPIKey)=='undefined' || (adminAPIKey.length==0))){
+        logger.error ("getAllMonitors missing adminAPIKey")
+        return []
+    }
+
+    let monitors = await syntheticsAPI.getAllMonitors({adminAPIKey})
+        .catch(error => console.log(`failed to get all Synthetics Monitorserror =${error}`))
+
+    if (typeof (monitors) == 'undefined' || monitors.length ==0){
+        logger.info('getAllMonitors return no monitor')
+        return []
+    }
+
+    let [monitorNames, locations] = syntheticsAPI.parse(monitors)
+
+    byMonitor.start(configId, monitorNames);
+
+    return monitors
+}
+
+function useSynthRestAPI(configId){
+    let useSynthAPI=false
+    let restAPIAdminKey=""
+
+    try{
+        restAPIAdminKey = config.get(`${configId}.restAPIAdminKey`)
+        useSynthAPI = (restAPIAdminKey.length >0)?true:false
+    }catch (err){
+        // swallow
+        useSynthAPI=false
+        restAPIAdminKey=""
+    }
+    return {useSynthAPI, restAPIAdminKey}
+}
+
 
 // Run every {duration} seconds
 var job = new CronJob(cronTime, function() {
@@ -55,7 +94,13 @@ var job = new CronJob(cronTime, function() {
   for (var i = 0; i < configArr.length; i++) {
     var configId = configArr[i];
     // getMonitorList(configId);
-    getUniqueCounts(configId);
+
+    let {useSynthAPI,restAPIAdminKey} = useSynthRestAPI(configId)
+    if (useSynthAPI){
+      getAllMonitors(configId, restAPIAdminKey)
+    }else{
+      getUniqueCounts(configId);
+    }
   }
 });
 
@@ -71,3 +116,4 @@ if (configArr.length == 1) {
   single = false;
 }
 job.start();
+

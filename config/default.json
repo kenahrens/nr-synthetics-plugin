@@ -8,6 +8,13 @@
   "newrelic": {
     "accountId": "",
     "insightsQueryKey": "",
-    "insightsInsertKey": ""
+    "insightsInsertKey": "",
+
+    "target":{
+      "accountId": "",
+      "insightsInsertKey": "",
+      "insightsQueryKey":""
+    },
+    "restAPIAdminKey":""
   }
 }
