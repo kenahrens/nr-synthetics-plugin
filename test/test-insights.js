@@ -15,16 +15,7 @@ describe('New Relic Insights API Test', function() {
   
   it('Integration test', function (done) {
 
-    /////////////////////////////////////
-    //
-    // IMPORTANT!!!
-    // Enter the account and the Insights Query Key
-    ///
-
-    let accountId =""
-    let insightsQueryKey = ""
-
-
+    let {accountId, insightsQueryKey} = helper.getInsightsQueryConfig(configId);
 
     var nrql = 'SELECT count(*) FROM SyntheticCheck';
 

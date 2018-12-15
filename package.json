@@ -18,7 +18,7 @@
     "config": "^1.21.0",
     "cron": "^1.1.0",
     "forever": "^0.15.2",
-    "newrelic-api-client": "0.0.4",
+    "newrelic-api-client": "0.1.5",
     "node-fetch": "^2.3.0",
     "parse-link-header": "^1.0.1",
     "q": "^1.5.1",
@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "^3.0.2",
+    "mocha": "^5.2.0",
     "nock": "^10.0.2",
     "sinon": "^7.1.1"
   }
