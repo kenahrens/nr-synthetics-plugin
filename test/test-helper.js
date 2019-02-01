@@ -191,5 +191,47 @@ describe('Helper test', function () {
 
     });
 
+    it('test splitMap', (done) => {
+        let mapObj = {
+            'monitorName1':{
+                'prop1':1,
+                'prop2': 'a',
+                'prop3': true
+            },
+            'monitorName2':{
+                'prop1':1,
+                'prop2': 'a',
+                'prop3': true
+            },
+            'monitorName3':{
+                'prop1':1,
+                'prop2': 'a',
+                'prop3': true
+            }
+            ,
+            'monitorName4':{
+                'prop1':1,
+                'prop2': 'a',
+                'prop3': true
+            }
+            ,
+            'monitorName5':{
+                'prop1':1,
+                'prop2': 'a',
+                'prop3': true
+            }
+        }
 
+
+
+        let arrMap= helper.splitMap({mapObj,chunk:2})
+        // console.log(JSON.stringify(arrMap))
+
+        assert (arrMap.length == 3, 'invalid chunking')
+
+
+
+        done()
+
+    });
 });

@@ -5,6 +5,8 @@ const version = require('./package.json').version;
 // These are helper libraries
 const helper = require('./lib/helper.js');
 const insights = require('./lib/insights.js');
+const plugins = require('./lib/plugins.js');
+
 const byMonitor = require('./lib/byMonitor.js');
 const byLocation = require('./lib/byLocation.js');
 const syntheticsAPI = require ('./lib/syntheticsAPI')
@@ -60,11 +62,121 @@ async function getAllMonitors(configId, adminAPIKey ) {
     }
 
     let [monitorNames, locations] = syntheticsAPI.parse(monitors)
+    return  [monitorNames, locations]
 
-    byMonitor.start(configId, monitorNames);
-
-    return monitors
 }
+
+async  function processMonitorStatus({monitorNames, configId}){
+
+    let startTime = Date.now();
+
+
+    //********************************************************
+    // Group Insights Query for Synthetic Check events
+    //
+    let members =  byMonitor.splitMonitorArray( {monitors:monitorNames, chunk:20})
+    let executors=[]
+    for(let i=0, j=members.length; i< j; i++){
+        // run Insights query on Synthetic check event for select monitors
+        executors.push(byMonitor.getMonitorsStatus({monitors:members[i], configId}))
+    }
+
+
+    // responses is [ {status:"<SUCCESS|FAILED>" , json:"<json response>"} ]
+    let responses = await Promise.all(executors).catch( e=>{
+        logger.error ("rejected with error =" + e)
+    })
+
+    //********************************************************
+
+
+    //********************************************************
+    // publish  ExtraSyntheticsPluginStats
+    // startTime - startTime of Query
+    postExtraSynthPluginStats(responses, configId, startTime)
+    //********************************************************
+
+
+    //********************************************************
+    // Create the Plugin and Insights Metrics from the response
+    let pluginMap={}
+    let insightsMap={}
+    for (let response of responses){
+
+        if (response.status != 'SUCCESS'){
+            continue;
+        }
+
+        let parsedFacets = byMonitor.parseFacets(response.json)
+
+        pluginMap= Object.assign(  {}, pluginMap, byMonitor.createPluginMap(parsedFacets))
+        insightsMap= Object.assign( {}, insightsMap, byMonitor.createInsightsMap(parsedFacets))
+    }
+    logger.debug("pluginMap="+  JSON.stringify(pluginMap))
+    logger.debug("insightsMap="+  JSON.stringify(insightsMap))
+
+    //********************************************************
+
+
+    //********************************************************
+    // Publish Plugin Metrics
+    let ret= await postPluginMetrics(pluginMap)
+    logger.info(`Plugin Post status=${ret.status}`)
+    //********************************************************
+
+
+    //********************************************************
+    // Publish Insights Metrics
+    let {accountId,insightsInsertKey }  = helper.getInsightsInsertConfig(configId)
+    let {success, uuid}= await insights.publishAsync({body:insights.insightsMapToEvent(insightsMap), accountId, insightsInsertKey})
+    logger.info(`Insights Post status=${ (success)?"SUCCCESS":"FAILED"} uuid=${uuid}` )
+    //********************************************************
+
+}
+
+
+async function postPluginMetrics(pluginMap){
+    let monitorChunk = 500
+    let monitorBuckets= helper.splitMap({mapObj:pluginMap, chunk:monitorChunk})
+
+    let pluginExecutor=[]
+    for(let i=0, j=monitorBuckets.length; i< j; i++){
+        pluginExecutor.push(  plugins.postAsync({body: plugins.pluginMapToJSON(monitorBuckets[i]) , licenseKey: config.get('licenseKey')}) )
+    }
+
+    let pluginResponses = await Promise.all(pluginExecutor).catch( e=>{
+        logger.error ("rejected with error =" + e)
+        return { status:'FAILED', responses}
+    })
+
+    logger.debug(`Plugins Post status=${JSON.stringify(pluginResponses)}`)
+
+    return {status:'SUCCESS', response:{count:pluginResponses.length, pluginResponses }}
+}
+
+function postExtraSynthPluginStats(responses, configId, startTime){
+    let totalCount= responses.length
+    let responseCount= responses.filter( resp=>resp.status=="SUCCESS" ).length
+    let errorCount= totalCount - responseCount
+    let event={
+        eventType: 'ExtraSyntheticsPluginStats',
+        approach: 'byMonitor',
+        errorCount,
+        responseCount,
+        totalCount,
+        errorRate: (100 * errorCount / totalCount).toFixed(2),
+        duration: (Date.now() - startTime)
+    }
+    insights.publish(event, configId, function(error, response, body) {
+        if (!error && response.statusCode == 200) {
+            logger.info(`Posted ExtraSyntheticsPluginStats stats=${JSON.stringify(event)}`);
+        } else {
+            helper.logError('Insights POST', error, response, body);
+        }
+    });
+}
+
+
 
 function useSynthRestAPI(configId){
     let useSynthAPI=false
@@ -83,7 +195,7 @@ function useSynthRestAPI(configId){
 
 
 // Run every {duration} seconds
-var job = new CronJob(cronTime, function() {
+var job =new CronJob(cronTime,  async  function() {
   var env = process.env.NODE_ENV;
   if (env == null) {
     env = 'default';
@@ -97,7 +209,11 @@ var job = new CronJob(cronTime, function() {
 
     let {useSynthAPI,restAPIAdminKey} = useSynthRestAPI(configId)
     if (useSynthAPI){
-      getAllMonitors(configId, restAPIAdminKey)
+        let [monitorNames, locations]= await getAllMonitors(configId, restAPIAdminKey)
+        processMonitorStatus({monitorNames, configId}).catch( e=>{
+            logger.error(`Failed to process monitor status Err= ${JSON.stringify(e)}`)
+        })
+
     }else{
       getUniqueCounts(configId);
     }
