@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nr-synthetics-plugin-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nr-synthetics-plugin
+  template:
+    metadata:
+      labels:
+        app: nr-synthetics-plugin
+    spec:
+      containers:
+      - name: nr-synthetics-plugin
+        image: nr-synthetics-plugin:2.2.1
+        env:
+        - name: NODE_ENV
+          value: production
