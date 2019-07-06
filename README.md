@@ -32,7 +32,7 @@ Here's how you run through K8S.
 * Clone or download this repository
 * Copy config/default.json to config/production.json 
 * Put in the required license keys in the config
-* Build the container like ```docker build -t nr-synthetics-plugin:2.2.1 .``` and publish to your K8S repository
+* Build the container like ```docker build -t kenahrens/nr-synthetics-plugin:2.2.2 .``` and publish to your K8S repository
 * Run the deployment with ```kubectl apply -f k8s/plugin-deployment.yaml```
 
 ## Metrics Included

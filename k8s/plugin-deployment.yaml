@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: nr-synthetics-plugin
-        image: nr-synthetics-plugin:2.2.1
+        image: kenahrens/nr-synthetics-plugin:2.2.2
         env:
         - name: NODE_ENV
           value: production
