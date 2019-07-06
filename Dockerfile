@@ -5,5 +5,6 @@ COPY . /newrelic
 USER newrelic
 WORKDIR /newrelic
 
+RUN npm install
 
 CMD ["/bin/sh", "-c", "npm start"]

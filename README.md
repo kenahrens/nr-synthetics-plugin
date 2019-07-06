@@ -4,9 +4,10 @@
 This plugin runs queries against New Relic Insights to calculate things like % of locations with a failure. It works by querying Insights every 30 seconds, calculating the new metrics (like % of failing locations) and publishing the results as Plugin metrics.
 
 ## Installation and Setup
-There are currently 2 options for running this plugin:
+There are currently 3 options for running this plugin:
 * Run the plugin directly through NodeJS
 * Run the plugin as a Docker container
+* Run the plugin inside K8S
 
 ## Setup and Run Directly
 Here are the steps to get set up with this plugin:
@@ -25,6 +26,14 @@ Thanks to @ntkach there are now some Docker files. Here's how you run through Do
 * Create the ENV variables (see the 4 required variables below)
 * Build the container with something such as: ```docker build -t nr-synthetics-plugin .```
 * Run the container detatched with the compose file: ```docker-compose up -d```
+
+## Setup and Run inside K8S
+Here's how you run through K8S.
+* Clone or download this repository
+* Copy config/default.json to config/production.json 
+* Put in the required license keys in the config
+* Build the container like ```docker build -t nr-synthetics-plugin:2.2.1 .``` and publish to your K8S repository
+* Run the deployment with ```kubectl apply -f k8s/plugin-deployment.yaml```
 
 ## Metrics Included
 For every monitor that has reported data, this plugin currently will calculate and publish the following metrics:
