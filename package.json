@@ -17,7 +17,7 @@
     "commander": "^2.9.0",
     "config": "^1.21.0",
     "cron": "^1.1.0",
-    "newrelic-api-client": "0.1.5",
+    "newrelic-api-client": "0.1.7",
     "node-fetch": "^2.3.0",
     "parse-link-header": "^1.0.1",
     "q": "^1.5.1",
