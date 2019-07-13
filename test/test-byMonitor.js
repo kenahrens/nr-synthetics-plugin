@@ -23,11 +23,11 @@ describe('byMonitor test', function () {
         let response = await insights.queryAsync({nrql, accountId, insightsQueryKey})
 
         let tmpMembers = response.json.results[0].members
-        let chunk=5
+        let chunk=20
         let members =  byMonitor.splitMonitorArray( {monitors:tmpMembers, chunk})
 
         // Test chunking
-        assert( ((tmpMembers.length / chunk) + ((tmpMembers % chunk >0)?1:0))   == members.length, 'invalid chunkinkg logic')
+        assert( (Math.floor(tmpMembers.length / chunk) + ((tmpMembers.length % chunk >0)?1:0)) == members.length, 'invalid chunkinkg logic')
         assert(members.length >0, `no SyntheticCheck found for accountId ${accountId}`)
 
 

@@ -6,3 +6,4 @@ docker-compose.yml
 README.md
 nr.env
 test/*
+node_modules/*
