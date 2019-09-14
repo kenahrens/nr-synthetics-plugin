@@ -1,8 +1,8 @@
-FROM node:10
+FROM node:10-alpine
 
-RUN useradd -d /newrelic -m -s /bin/bash -U newrelic
+# RUN useradd -d /newrelic -m -s /bin/bash -U newrelic
 COPY . /newrelic
-USER newrelic
+# USER newrelic
 WORKDIR /newrelic
 
 RUN npm install
