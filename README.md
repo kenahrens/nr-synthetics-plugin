@@ -20,7 +20,7 @@ Once you are all set up you can run the plugin with ```npm start```
 
 ## Setup and Run as Docker Container
 Thanks to @ntkach there are now some Docker files. Here's how you run through Docker.
-* Pre-requisite is NodeJS (7.10 or newer) and npm
+* Pre-requisite is NodeJS (8 or newer) and npm
 * Clone or download this repository
 * Once in the directory run ```npm install```
 * Create the ENV variables (see the 4 required variables below)
